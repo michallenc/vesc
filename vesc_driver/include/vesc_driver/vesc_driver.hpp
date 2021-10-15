@@ -38,7 +38,7 @@
 
 #include <memory>
 #include <string>
-#include <experimental/optional>
+#include <optional>
 
 #include "vesc_driver/vesc_interface.hpp"
 #include "vesc_driver/vesc_packet.hpp"
@@ -68,14 +68,14 @@ private:
     CommandLimit(
       rclcpp::Node * node_ptr,
       const std::string & str,
-      const std::experimental::optional<double> & min_lower = std::experimental::optional<double>(),
-      const std::experimental::optional<double> & max_upper = std::experimental::optional<double>());
+      const std::optional<double> & min_lower = std::optional<double>(),
+      const std::optional<double> & max_upper = std::optional<double>());
     double clip(double value);
     rclcpp::Node * node_ptr;
     rclcpp::Logger logger;
     std::string name;
-    std::experimental::optional<double> lower;
-    std::experimental::optional<double> upper;
+    std::optional<double> lower;
+    std::optional<double> upper;
   };
 
   CommandLimit duty_cycle_limit_;
