@@ -115,6 +115,14 @@ namespace vesc_driver {
   - try to predict vesc bounds (from vesc config) and command detect bounds errors
 */
 
+	bool VescDriver::ensureOperatingMode() {
+		if (driver_mode_ != MODE_OPERATING) {
+			RCLCPP_WARN(get_logger(), "Cannot process callback because the node is not in the operating mode.");
+			return false;
+		}
+		return true;
+	}
+
 	void VescDriver::timerCallback() {
 		// VESC interface should not unexpectedly disconnect, but test for it anyway
 		if (!vesc_.isConnected()) {
@@ -199,7 +207,7 @@ namespace vesc_driver {
  *                   on its configuration, e.g. absolute value is between 0.05 and 0.95.
  */
 	void VescDriver::dutyCycleCallback(const Float64::SharedPtr duty_cycle) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			vesc_.setDutyCycle(duty_cycle_limit_.clip(duty_cycle->data));
 		}
 	}
@@ -210,7 +218,7 @@ namespace vesc_driver {
  *                its configuration.
  */
 	void VescDriver::currentCallback(const Float64::SharedPtr current) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			vesc_.setCurrent(current_limit_.clip(current->data));
 		}
 	}
@@ -221,7 +229,7 @@ namespace vesc_driver {
  *              depending on its configuration.
  */
 	void VescDriver::brakeCallback(const Float64::SharedPtr brake) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			vesc_.setBrake(brake_limit_.clip(brake->data));
 		}
 	}
@@ -233,7 +241,7 @@ namespace vesc_driver {
  *              range depending on its configuration.
  */
 	void VescDriver::speedCallback(const Float64::SharedPtr speed) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			vesc_.setSpeed(speed_limit_.clip(speed->data));
 		}
 	}
@@ -243,7 +251,7 @@ namespace vesc_driver {
  *                 Note that the VESC must be in encoder mode for this command to have an effect.
  */
 	void VescDriver::positionCallback(const Float64::SharedPtr position) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			// ROS uses radians but VESC seems to use degrees. Convert to degrees.
 			double position_deg = position_limit_.clip(position->data) * 180.0 / M_PI;
 			vesc_.setPosition(position_deg);
@@ -254,7 +262,7 @@ namespace vesc_driver {
  * @param servo Commanded VESC servo output position. Valid range is 0 to 1.
  */
 	void VescDriver::servoCallback(const Float64::SharedPtr servo) {
-		if (driver_mode_ = MODE_OPERATING) {
+		if (ensureOperatingMode()) {
 			double servo_clipped(servo_limit_.clip(servo->data));
 			vesc_.setServo(servo_clipped);
 			// publish clipped servo value as a "sensor"

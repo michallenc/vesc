@@ -103,6 +103,7 @@ private:
     MODE_OPERATING
   }
   driver_mode_t;
+  bool ensureOperatingMode();
 
   // other variables
   driver_mode_t driver_mode_;           ///< driver state machine mode (state)
