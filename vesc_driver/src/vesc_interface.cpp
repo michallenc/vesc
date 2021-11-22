@@ -104,7 +104,9 @@ namespace vesc_driver {
 
 	void VescInterface::Impl::connect(const std::string &port) {
 		uint32_t baud_rate = 115200;
-		auto fc = drivers::serial_driver::FlowControl::HARDWARE;
+		// using FlowControl::HARDWARE on macOS causes an exception:
+		//   set_option: Operation not supported on socket failed.
+		auto fc = drivers::serial_driver::FlowControl::NONE;
 		auto pt = drivers::serial_driver::Parity::NONE;
 		auto sb = drivers::serial_driver::StopBits::ONE;
 		device_config_ = std::make_unique<drivers::serial_driver::SerialPortConfig>(baud_rate, fc, pt, sb);
