@@ -170,7 +170,10 @@ namespace vesc_driver {
 	void VescInterface::disconnect() {
 		// todo - mutex?
 
-		if (isConnected()) {
+		// It is possible that isConnected() returns true even if VescInterface::connect throws SerialException.
+		// For example, when the port is successfully opened but setting of the options fails.
+		// In that case impl_->packet_thread_ will be uninitialized, i.e. nullptr.
+		if (impl_->packet_thread_) {
 			// bring down read thread
 			impl_->packet_thread_run_ = false;
 			impl_->packet_thread_->join();
