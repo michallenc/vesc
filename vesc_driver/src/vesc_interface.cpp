@@ -116,6 +116,7 @@ namespace vesc_driver {
 
 			buffer_mutex_.unlock();
 			// Only attempt to read every 10 ms
+			// TODO: F1tenth lowered this to 5 ms.
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
@@ -196,6 +197,7 @@ namespace vesc_driver {
 		if (impl_->packet_thread_) {
 			// bring down read thread
 			impl_->packet_thread_run_ = false;
+			// TODO: This was added by F1tenth, Why?: requestFWVersion();
 			impl_->packet_thread_->join();
 			impl_->serial_driver_->port()->close();
 		}
