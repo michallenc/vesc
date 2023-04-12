@@ -90,6 +90,8 @@ namespace vesc_driver {
 
 		void requestState();
 
+		void requestImuData();
+
 		void setDutyCycle(double duty_cycle);
 
 		void setCurrent(double current);

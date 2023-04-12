@@ -228,4 +228,9 @@ namespace vesc_driver {
 		send(VescPacketSetServoPos(servo));
 	}
 
+	void VescInterface::requestImuData()
+	{
+		send(VescPacketRequestImu());
+	}
+
 }  // namespace vesc_driver
