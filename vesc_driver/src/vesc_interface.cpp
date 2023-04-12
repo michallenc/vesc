@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace vesc_driver {
 
