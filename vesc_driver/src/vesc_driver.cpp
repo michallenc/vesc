@@ -199,6 +199,12 @@ namespace vesc_driver {
 			// todo: might need lock here
 			fw_version_major_ = fw_version->fwMajor();
 			fw_version_minor_ = fw_version->fwMinor();
+			RCLCPP_INFO(
+				get_logger(),
+				"-=%s=- hardware paired %d",
+				fw_version->hwname().c_str(),
+				fw_version->paired()
+			);
 		} else if (packet->name() == "ImuData") {
 			std::shared_ptr<VescPacketImu const> imuData =
 			std::dynamic_pointer_cast<VescPacketImu const>(packet);
@@ -246,6 +252,14 @@ namespace vesc_driver {
 			imu_pub_->publish(imu_msg);
 			imu_std_pub_->publish(std_imu_msg);
 		}
+		auto & clk = *this->get_clock();
+			RCLCPP_DEBUG_THROTTLE(
+			get_logger(),
+			clk,
+			5000,
+			"%s packet received",
+			packet->name().c_str()
+		);
 	}
 
 	void VescDriver::vescErrorCallback(const std::string &error) {
