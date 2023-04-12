@@ -42,6 +42,7 @@ namespace vesc_ackermann
 using geometry_msgs::msg::TransformStamped;
 using nav_msgs::msg::Odometry;
 using std::placeholders::_1;
+using std_msgs::msg::Float64;
 using vesc_msgs::msg::VescStateStamped;
 
 VescToOdom::VescToOdom(const rclcpp::NodeOptions & options)
@@ -55,20 +56,20 @@ VescToOdom::VescToOdom(const rclcpp::NodeOptions & options)
   yaw_(0.0)
 {
   // get ROS parameters
-  declare_parameter("odom_frame", odom_frame_);
-  declare_parameter("base_frame", base_frame_);
-  declare_parameter("use_servo_cmd_to_calc_angular_velocity", use_servo_cmd_);
+  odom_frame_ = declare_parameter("odom_frame", odom_frame_);
+  base_frame_ = declare_parameter("base_frame", base_frame_);
+  use_servo_cmd_ = declare_parameter("use_servo_cmd_to_calc_angular_velocity", use_servo_cmd_);
 
-  speed_to_erpm_gain_ = declare_parameter("speed_to_erpm_gain").get<double>();
-  speed_to_erpm_offset_ = declare_parameter("speed_to_erpm_offset").get<double>();
+  speed_to_erpm_gain_ = declare_parameter<double>("speed_to_erpm_gain");
+  speed_to_erpm_offset_ = declare_parameter<double>("speed_to_erpm_offset");
 
   if (use_servo_cmd_) {
-    steering_to_servo_gain_ = declare_parameter("steering_angle_to_servo_gain").get<double>();
-    steering_to_servo_offset_ = declare_parameter("steering_angle_to_servo_offset").get<double>();
-    wheelbase_ = declare_parameter("wheelbase").get<double>();
+    steering_to_servo_gain_ = declare_parameter<double>("steering_angle_to_servo_gain");
+    steering_to_servo_offset_ = declare_parameter<double>("steering_angle_to_servo_offset");
+    wheelbase_ = declare_parameter<double>("wheelbase");
   }
 
-  declare_parameter("publish_tf", publish_tf_);
+  publish_tf_ = declare_parameter("publish_tf", publish_tf_);
 
   // create odom publisher
   odom_pub_ = create_publisher<Odometry>("odom", 10);
@@ -83,7 +84,7 @@ VescToOdom::VescToOdom(const rclcpp::NodeOptions & options)
     "sensors/core", 10, std::bind(&VescToOdom::vescStateCallback, this, _1));
 
   if (use_servo_cmd_) {
-    servo_sub_ = create_subscription<VescStateStamped>(
+    servo_sub_ = create_subscription<Float64>(
       "sensors/servo_position_command", 10, std::bind(&VescToOdom::servoCmdCallback, this, _1));
   }
 }
