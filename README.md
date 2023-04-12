@@ -2,6 +2,8 @@
 
 ![ROS2 CI Workflow](https://github.com/f1tenth/vesc/workflows/ROS2%20CI%20Workflow/badge.svg)
 
+ROS2 version from [here](https://github.com/pokusew/vesc).
+
 Packages to interface with Veddar VESC motor controllers. See https://vesc-project.com/ for details
 
 # Development Log
