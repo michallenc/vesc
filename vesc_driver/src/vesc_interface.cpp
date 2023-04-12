@@ -64,6 +64,7 @@ namespace vesc_driver {
 			if (!buffer_.empty()) {
 				// search buffer for valid packet(s)
 				auto iter = buffer_.begin();
+				auto iter_begin = buffer_.begin();
 				while (iter != buffer_.end()) {
 					// check if valid start-of-frame character
 					if (VescFrame::VESC_SOF_VAL_SMALL_FRAME == *iter ||
@@ -73,15 +74,26 @@ namespace vesc_driver {
 						VescPacketConstPtr packet =
 							VescPacketFactory::createPacket(iter, buffer_.end(), &bytes_needed, &error);
 						if (packet) {
+							// good packet, check if we skipped any data
+							if (std::distance(iter_begin, iter) > 0) {
+								std::ostringstream ss;
+								ss << "Out-of-sync with VESC, unknown data leading valid frame. Discarding " <<
+									std::distance(iter_begin, iter) << " bytes.";
+								error_handler_(ss.str());
+							}
 							// call packet handler
 							packet_handler_(packet);
 							// update state
 							iter = iter + packet->frame().size();
+							iter_begin = iter;
 							// continue to look for another frame in buffer
 							continue;
 						} else if (bytes_needed > 0) {
 							// need more data, break out of while loop
 							break;  // for (iter_sof...
+						} else {
+							// else, this was not a packet, move on to next byte
+							error_handler_(error);
 						}
 					}
 
@@ -94,6 +106,11 @@ namespace vesc_driver {
 				}
 
 				// erase "used" buffer
+				if (std::distance(iter_begin, iter) > 0) {
+					std::ostringstream ss;
+					ss << "Out-of-sync with VESC, discarding " << std::distance(iter_begin, iter) << " bytes.";
+					error_handler_(ss.str());
+				}
 				buffer_.erase(buffer_.begin(), iter);
 			}
 
