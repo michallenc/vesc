@@ -65,6 +65,7 @@ namespace vesc_driver {
 		  fw_version_minor_(-1) {
 		// get vesc serial port address
 		std::string port = declare_parameter<std::string>("port", "");
+		declare_parameter<std::string>("frame_id", "base_link");
 
 		// attempt to connect to the serial port
 		try {
@@ -211,8 +212,10 @@ namespace vesc_driver {
 
 			auto imu_msg = VescImuStamped();
 			auto std_imu_msg = Imu();
+			imu_msg.header.frame_id = this->get_parameter("frame_id").as_string();
 			imu_msg.header.stamp = now();
 			std_imu_msg.header.stamp = now();
+			std_imu_msg.header.frame_id = this->get_parameter("frame_id").as_string();
 
 			imu_msg.imu.ypr.x = imuData->roll();
 			imu_msg.imu.ypr.y = imuData->pitch();
