@@ -517,15 +517,15 @@ namespace vesc_driver {
 	}
 
 	double VescPacketImu::roll() const {
-		return roll_ * 180 / M_PI;	// da rad a gradi per debug deg
+		return roll_;	// rad
 	}
 
 	double VescPacketImu::pitch() const {
-		return pitch_ * 180 / M_PI;
+		return pitch_ ;
 	}
 
 	double VescPacketImu::yaw() const {
-		return yaw_ * 180 / M_PI;
+		return yaw_;
 	}
 
 	double VescPacketImu::acc_x() const {
