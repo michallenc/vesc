@@ -62,7 +62,8 @@ namespace vesc_driver {
 		  servo_limit_(this, "servo", 0.0, 1.0),
 		  driver_mode_(MODE_INITIALIZING),
 		  fw_version_major_(-1),
-		  fw_version_minor_(-1) {
+		  fw_version_minor_(-1),
+		  legacy_mode_(false) {
 		// get vesc serial port address
 		std::string port = declare_parameter<std::string>("port", "");
 		declare_parameter<std::string>("frame_id", "base_link");
@@ -148,12 +149,21 @@ namespace vesc_driver {
 					get_logger(), "Connected to VESC with firmware version %d.%d",
 					fw_version_major_, fw_version_minor_);
 				driver_mode_ = MODE_OPERATING;
+
+				if (fw_version_major_ < 3) {
+					RCLCPP_INFO(
+						get_logger(), "Running in legacy mode");
+
+					legacy_mode_ = true;
+				}
 			}
 		} else if (driver_mode_ == MODE_OPERATING) {
 			// poll for vesc state (telemetry)
 			vesc_.requestState();
 			// poll for vesc imu
-			vesc_.requestImuData();
+			if (!legacy_mode_) {
+				vesc_.requestImuData();
+			}
 		} else {
 			// unknown mode, how did that happen?
 			assert(false && "unknown driver mode");
@@ -168,30 +178,57 @@ namespace vesc_driver {
 			auto state_msg = VescStateStamped();
 			state_msg.header.stamp = now();
 
-			state_msg.state.voltage_input = values->v_in();
-			state_msg.state.current_motor = values->avg_motor_current();
-			state_msg.state.current_input = values->avg_input_current();
-			state_msg.state.avg_id = values->avg_id();
-			state_msg.state.avg_iq = values->avg_iq();
-			state_msg.state.duty_cycle = values->duty_cycle_now();
-			state_msg.state.speed = values->rpm();
+			if (legacy_mode_) {
+				state_msg.state.voltage_input = values->v_in_legacy();
+				state_msg.state.current_motor = values->avg_motor_current_legacy();
+				state_msg.state.current_input = values->avg_input_current_legacy();
+				state_msg.state.avg_id = -1.0;
+				state_msg.state.avg_iq = -1.0;
+				state_msg.state.duty_cycle = values->duty_cycle_now_legacy();
+				state_msg.state.speed = values->rpm_legacy();
 
-			state_msg.state.charge_drawn = values->amp_hours();
-			state_msg.state.charge_regen = values->amp_hours_charged();
-			state_msg.state.energy_drawn = values->watt_hours();
-			state_msg.state.energy_regen = values->watt_hours_charged();
-			state_msg.state.displacement = values->tachometer();
-			state_msg.state.distance_traveled = values->tachometer_abs();
-			state_msg.state.fault_code = values->fault_code();
+				state_msg.state.charge_drawn = values->amp_hours_legacy();
+				state_msg.state.charge_regen = values->amp_hours_charged_legacy();
+				state_msg.state.energy_drawn = values->watt_hours_legacy();
+				state_msg.state.energy_regen = values->watt_hours_charged_legacy();
+				state_msg.state.displacement = values->tachometer_legacy();
+				state_msg.state.distance_traveled = values->tachometer_abs_legacy();
+				state_msg.state.fault_code = values->fault_code_legacy();
 
-			state_msg.state.pid_pos_now = values->pid_pos_now();
-			state_msg.state.controller_id = values->controller_id();
+				state_msg.state.pid_pos_now = -1.0;
+				state_msg.state.controller_id = -1;
 
-			state_msg.state.ntc_temp_mos1 = values->temp_mos1();
-			state_msg.state.ntc_temp_mos2 = values->temp_mos2();
-			state_msg.state.ntc_temp_mos3 = values->temp_mos3();
-			state_msg.state.avg_vd = values->avg_vd();
-			state_msg.state.avg_vq = values->avg_vq();
+				state_msg.state.ntc_temp_mos1 = values->temp_mos1_legacy();
+				state_msg.state.ntc_temp_mos2 = values->temp_mos2_legacy();
+				state_msg.state.ntc_temp_mos3 = values->temp_mos3_legacy();
+				state_msg.state.avg_vd = -1.0;
+				state_msg.state.avg_vq = -1.0;
+			} else {
+				state_msg.state.voltage_input = values->v_in();
+				state_msg.state.current_motor = values->avg_motor_current();
+				state_msg.state.current_input = values->avg_input_current();
+				state_msg.state.avg_id = values->avg_id();
+				state_msg.state.avg_iq = values->avg_iq();
+				state_msg.state.duty_cycle = values->duty_cycle_now();
+				state_msg.state.speed = values->rpm();
+
+				state_msg.state.charge_drawn = values->amp_hours();
+				state_msg.state.charge_regen = values->amp_hours_charged();
+				state_msg.state.energy_drawn = values->watt_hours();
+				state_msg.state.energy_regen = values->watt_hours_charged();
+				state_msg.state.displacement = values->tachometer();
+				state_msg.state.distance_traveled = values->tachometer_abs();
+				state_msg.state.fault_code = values->fault_code();
+
+				state_msg.state.pid_pos_now = values->pid_pos_now();
+				state_msg.state.controller_id = values->controller_id();
+
+				state_msg.state.ntc_temp_mos1 = values->temp_mos1();
+				state_msg.state.ntc_temp_mos2 = values->temp_mos2();
+				state_msg.state.ntc_temp_mos3 = values->temp_mos3();
+				state_msg.state.avg_vd = values->avg_vd();
+				state_msg.state.avg_vq = values->avg_vq();
+			}
 
 			state_pub_->publish(state_msg);
 		} else if (packet->name() == "FWVersion") {
@@ -332,7 +369,11 @@ namespace vesc_driver {
 	void VescDriver::servoCallback(const Float64::SharedPtr servo) {
 		if (ensureOperatingMode()) {
 			double servo_clipped(servo_limit_.clip(servo->data));
-			vesc_.setServo(servo_clipped);
+			if (legacy_mode_) {
+				vesc_.setServoLegacy(servo_clipped);
+			} else {
+				vesc_.setServo(servo_clipped);
+			}
 			// publish clipped servo value as a "sensor"
 			auto servo_sensor_msg = Float64();
 			servo_sensor_msg.data = servo_clipped;

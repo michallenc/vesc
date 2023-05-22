@@ -104,6 +104,8 @@ namespace vesc_driver {
 
 		void setServo(double servo);
 
+		void setServoLegacy(double servo);
+
 	private:
 		// Pimpl - hide serial port members from class users
 		class Impl;

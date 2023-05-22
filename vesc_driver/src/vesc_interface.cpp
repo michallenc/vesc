@@ -231,6 +231,10 @@ namespace vesc_driver {
 		send(VescPacketSetServoPos(servo));
 	}
 
+	void VescInterface::setServoLegacy(double servo) {
+		send(VescPacketSetServoPosLegacy(servo));
+	}
+
 	void VescInterface::requestImuData()
 	{
 		send(VescPacketRequestImu());

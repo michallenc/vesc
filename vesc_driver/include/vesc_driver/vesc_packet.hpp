@@ -148,29 +148,44 @@ class VescPacketValues : public VescPacket
 public:
   explicit VescPacketValues(std::shared_ptr<VescFrame> raw);
 
-  double  temp_fet() const;
-  double  temp_motor() const;
+  double  temp_fet() const; // NOT USED
+  double  temp_motor() const; // NOT USED
   double  avg_motor_current() const;
+  double  avg_motor_current_legacy() const;
   double  avg_input_current() const;
+  double  avg_input_current_legacy() const;
   double  avg_id() const;
   double  avg_iq() const;
   double  duty_cycle_now() const;
+  double  duty_cycle_now_legacy() const;
   double  rpm() const;
-  double  duty_now() const;
+  double  rpm_legacy() const;
+  double  duty_now() const; // NOT IMPLEMENTED
   double  v_in() const;
+  double  v_in_legacy() const;
   double  amp_hours() const;
+  double  amp_hours_legacy() const;
   double  amp_hours_charged() const;
+  double  amp_hours_charged_legacy() const;
   double  watt_hours() const;
+  double  watt_hours_legacy() const;
   double  watt_hours_charged() const;
+  double  watt_hours_charged_legacy() const;
   int32_t tachometer() const;
+  int32_t tachometer_legacy() const;
   int32_t tachometer_abs() const;
+  int32_t tachometer_abs_legacy() const;
   int     fault_code() const;
+  int     fault_code_legacy() const;
   double  pid_pos_now() const;
   int32_t controller_id() const;
 
   double  temp_mos1() const;
+  double  temp_mos1_legacy() const;
   double  temp_mos2() const;
+  double  temp_mos2_legacy() const;
   double  temp_mos3() const;
+  double  temp_mos3_legacy() const;
   double  avg_vd() const;
   double  avg_vq()  const;
 };
@@ -236,6 +251,16 @@ class VescPacketSetServoPos : public VescPacket
 {
 public:
   explicit VescPacketSetServoPos(double servo_pos);
+
+  //  double servo_pos() const;
+};
+
+/*------------------------------------------------------------------------------------------------*/
+
+class VescPacketSetServoPosLegacy : public VescPacket
+{
+public:
+  explicit VescPacketSetServoPosLegacy(double servo_pos);
 
   //  double servo_pos() const;
 };
