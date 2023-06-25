@@ -254,17 +254,17 @@ namespace vesc_driver {
 			std_imu_msg.header.stamp = now();
 			std_imu_msg.header.frame_id = this->get_parameter("frame_id").as_string();
 
-			imu_msg.imu.ypr.x = imuData->roll();
-			imu_msg.imu.ypr.y = imuData->pitch();
-			imu_msg.imu.ypr.z = imuData->yaw();
+			imu_msg.imu.ypr.x = imuData->roll()*-2*M_PI/360;
+			imu_msg.imu.ypr.y = imuData->pitch()*2*M_PI/360;
+			imu_msg.imu.ypr.z = imuData->yaw()*2*M_PI/360;
 
 			imu_msg.imu.linear_acceleration.x = imuData->acc_x();
 			imu_msg.imu.linear_acceleration.y = imuData->acc_y();
 			imu_msg.imu.linear_acceleration.z = imuData->acc_z();
 
-			imu_msg.imu.angular_velocity.x = imuData->gyr_x();
-			imu_msg.imu.angular_velocity.y = imuData->gyr_y();
-			imu_msg.imu.angular_velocity.z = imuData->gyr_z();
+			imu_msg.imu.angular_velocity.x = imuData->gyr_x()*-2*M_PI/360;
+			imu_msg.imu.angular_velocity.y = imuData->gyr_y()*2*M_PI/360;
+			imu_msg.imu.angular_velocity.z = imuData->gyr_z()*2*M_PI/360;
 
 			imu_msg.imu.compass.x = imuData->mag_x();
 			imu_msg.imu.compass.y = imuData->mag_y();
@@ -279,9 +279,9 @@ namespace vesc_driver {
 			std_imu_msg.linear_acceleration.y = imuData->acc_y();
 			std_imu_msg.linear_acceleration.z = imuData->acc_z();
 
-			std_imu_msg.angular_velocity.x = imuData->gyr_x();
-			std_imu_msg.angular_velocity.y = imuData->gyr_y();
-			std_imu_msg.angular_velocity.z = imuData->gyr_z();
+			std_imu_msg.angular_velocity.x = imuData->gyr_x()*-2*M_PI/360;
+			std_imu_msg.angular_velocity.y = imuData->gyr_y()*2*M_PI/360;
+			std_imu_msg.angular_velocity.z = imuData->gyr_z()*2*M_PI/360;
 
 			std_imu_msg.orientation.w = imuData->q_w();
 			std_imu_msg.orientation.x = imuData->q_x();
